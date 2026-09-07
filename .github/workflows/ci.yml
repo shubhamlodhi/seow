@@ -4,18 +4,23 @@ on:
   push:
     branches: [main]
   pull_request:
-    branches: [main]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Run build
-        run: echo "Build successful!"
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
 
-      - name: Run tests
-        run: echo "Tests successful!"
+      - name: Install
+        run: npm ci
+
+      - name: Build
+        run: npm run build
