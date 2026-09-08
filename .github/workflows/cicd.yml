@@ -41,12 +41,37 @@ jobs:
             -p 8080:80 \
             preact-site:latest
 
-      # Verify website
-      - name: Verify website
-        run: |
-          sleep 2
-          curl --fail http://localhost:8080
+      # Playwright
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
 
-      # Show container
-      - name: Container status
-        run: docker ps
+      - name: Render website
+        run: |
+                node - <<'EOF'
+                const { chromium } = require('playwright');
+                (async () => {
+                            const browser = await chromium.launch();
+                            const page = await browser.newPage({
+                              viewport: { width: 1280, height: 720 }
+                            });
+
+                            await page.goto('http://localhost:8080', {
+                              waitUntil: 'networkidle'
+                            });
+
+                            await page.screenshot({
+                              path: 'website.png',
+                              fullPage: true
+                            });
+
+                            console.log(await page.locator('body').innerText());
+
+                            await browser.close();
+                          })();
+                          EOF
+
+      - name: Upload rendered website screenshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: rendered-website
+          path: website.png
