@@ -1,0 +1,52 @@
+name: CI/CD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # CI: Get source code
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # CI: Install Node.js
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # CI: Install dependencies
+      - name: Install dependencies
+        run: npm ci
+
+      # CI: Build Preact application
+      - name: Build application
+        run: npm run build
+
+      # CD/Test deployment: Build Docker image
+      - name: Build Docker image
+        run: docker build -t preact-site:latest .
+
+      # CD/Test deployment: Run website
+      - name: Start Docker container
+        run: |
+          docker run -d \
+            --name preact-site \
+            -p 8080:80 \
+            preact-site:latest
+
+      # Verify website is serving correctly
+      - name: Verify website
+        run: |
+          sleep 2
+          curl --fail http://localhost:8080
+
+      # Show container status
+      - name: Container status
+        run: docker ps
