@@ -3,6 +3,7 @@ export function App() {
     <main>
       <h1>Preact CI/CD Test</h1>
       <p>Build pipeline is working 🚀</p>
+      <p>Made with Love by Shubham 🚀</p>
     </main>
   )
 }
