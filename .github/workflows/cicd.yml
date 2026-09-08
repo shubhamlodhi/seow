@@ -41,34 +41,42 @@ jobs:
             -p 8080:80 \
             preact-site:latest
 
-      # Playwright
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
-
       - name: Render website
         run: |
-                node - <<'EOF'
-                const { chromium } = require('playwright');
-                (async () => {
-                            const browser = await chromium.launch();
-                            const page = await browser.newPage({
-                              viewport: { width: 1280, height: 720 }
-                            });
+          docker run --rm \
+            --network host \
+            -v "${{ github.workspace }}:/work" \
+            mcr.microsoft.com/playwright:v1.55.0-noble \
+            node -e "
+              const { chromium } = require('playwright');
 
-                            await page.goto('http://localhost:8080', {
-                              waitUntil: 'networkidle'
-                            });
+              (async () => {
+                const browser = await chromium.launch({
+                  headless: true
+                });
 
-                            await page.screenshot({
-                              path: 'website.png',
-                              fullPage: true
-                            });
+                const page = await browser.newPage({
+                  viewport: {
+                    width: 1280,
+                    height: 720
+                  }
+                });
 
-                            console.log(await page.locator('body').innerText());
+                await page.goto('http://127.0.0.1:8080', {
+                  waitUntil: 'networkidle'
+                });
 
-                            await browser.close();
-                          })();
-                          EOF
+                await page.screenshot({
+                  path: '/work/website.png',
+                  fullPage: true
+                });
+
+                console.log(await page.locator('body').innerText());
+
+                await browser.close();
+              })();
+            "
+
 
       - name: Upload rendered website screenshot
         uses: actions/upload-artifact@v4
