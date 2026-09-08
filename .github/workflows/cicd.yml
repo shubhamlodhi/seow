@@ -50,3 +50,10 @@ jobs:
       # Show container
       - name: Container status
         run: docker ps
+
+      - name: Show hosted URL
+        run: |
+          echo "================================="
+          echo "Website is hosted at:"
+          echo "${{ steps.deployment.outputs.page_url }}"
+          echo "================================="
