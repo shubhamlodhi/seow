@@ -12,11 +12,11 @@ jobs:
     steps:
       # CI: Get source code
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
-      # CI: Install Node.js
+      # CI: Setup Node.js
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 22
           cache: npm
@@ -29,11 +29,11 @@ jobs:
       - name: Build application
         run: npm run build
 
-      # CD/Test deployment: Build Docker image
+      # Docker: Build production image
       - name: Build Docker image
         run: docker build -t preact-site:latest .
 
-      # CD/Test deployment: Run website
+      # Docker: Start website
       - name: Start Docker container
         run: |
           docker run -d \
@@ -41,12 +41,12 @@ jobs:
             -p 8080:80 \
             preact-site:latest
 
-      # Verify website is serving correctly
+      # Verify website
       - name: Verify website
         run: |
           sleep 2
           curl --fail http://localhost:8080
 
-      # Show container status
+      # Show container
       - name: Container status
         run: docker ps
